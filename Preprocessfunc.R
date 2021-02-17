@@ -31,4 +31,75 @@ traintestsplit <- function(data, test_split, set_seed = 1234){
   
   #return list of the trainset and the test set
   return(list('trainset' = train_set, 'testset' = test_set))
+}
+
+
+#outliermissingvalue function
+#ARGS (required):
+#1. trainset (should be df), 2. testset (should be df)
+
+outliermissingvalues <- function(trainset, testset){
+  #fix any missing values first in train set and test set
+  #train set
+  #for loop for each column
+  for (column in 1:ncol(trainset)) {
+    
+    #check if column is not factor, if so then run
+    if(!is.factor(trainset[, column])){
+     
+       #check if column has any missing values, ie number of missing values >0
+      if(sum(is.na(trainset[, column])) > 0){
+        
+        #get the mean of the column
+        average <- mean(trainset[, column], na.rm = T)
+        
+        #replace missing value with average
+        index <- which(is.na(trainset[, column]))
+        trainset[index, column] <- average
+      }
+    }
   }
+  
+  #test set
+  #for loop fro each column
+  for (column in 1:ncol(testset)) {
+    
+    #check if column is not factor, if so then run
+    if(!is.factor(testset[, column])){
+      
+      #check if column has any missing values, ie number of missing values >0
+      if(sum(is.na(testset[, column])) > 0){
+        
+        #get the mean of the column
+        average <- mean(trainset[, column], na.rm = T)
+        
+        #replace missing value with average
+        index <- which(is.na(testset[, column]))
+        testset[index, column] <- average
+      }
+    }
+  }
+  
+  #check for outliers in train set only fix train set outliers
+  for (column in 1:ncol(trainset)){
+    #only runs the numeric functions if the column is not a factor
+    if(!is.factor(trainset[, column])){
+      
+      #find the min and max values for being non outliers
+      iqrange <- IQR(trainset[, column], na.rm = T)
+      maxvalue <- as.numeric(quantile(trainset[, column], 3/4, na.rm = T) + iqrange)
+      minvalue <- as.numeric(quantile(trainset[, column], 1/4, na.rm = T) - iqrange)
+      
+      #all values < Q1 - IQR replaced by median
+      minindex <- which(trainset[, column] < minvalue)
+      trainset[minindex, column] <- median(trainset[, column])
+      
+      #all values > Q3 + IQR replace by median
+      maxindex <- which(trainset[, column] > maxvalue)
+      trainset[maxindex, column] <- median(trainset[, column])
+    }
+  }
+  #return the train and test sets
+  return(list('trainset' = trainset, 'testset' = testset))
+}
+

@@ -1,8 +1,13 @@
 library(glmnet)
 library(pROC)
 
-data <- read.csv("/Users/jacobstanosheck/Documents/TAMU/Thesis/Spring2021/Florida\ Water\ Quality\ Data.csv")
+data <- read.csv("Florida\ Water\ Quality\ Data.csv")
 summary(data)
+
+#test train test split function
+data <- traintestsplit(data, 0.2)
+head(data$trainset)
+head(data$testset)
 
 
 #Check number of instances for the Salmonella 
