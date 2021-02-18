@@ -6,9 +6,20 @@ summary(data)
 
 #test train test split function
 data <- traintestsplit(data, 0.2)
-head(data$trainset)
-head(data$testset)
 
+#set Salmonella as a factor for train and test
+data$trainset$Salmonella <- as.factor(data$trainset$Salmonella)
+data$testset$Salmonella <- as.factor(data$testset$Salmonella)
+
+#set Pond to as a factor
+data$trainset$Pond <- as.factor(data$trainset$Pond)
+data$testset$Pond <- as.factor(data$testset$Pond)
+
+#test outlier na value function
+data <- outliermissingvalues(data$trainset, data$testset)
+
+#standardize the data sets
+data <- standardize(data$trainset, data$testset)
 
 #Check number of instances for the Salmonella 
 #############################################

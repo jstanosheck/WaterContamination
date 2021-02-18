@@ -103,3 +103,50 @@ outliermissingvalues <- function(trainset, testset){
   return(list('trainset' = trainset, 'testset' = testset))
 }
 
+standardize <- function(trainset, testset){
+  #preallocate memory
+  average <- c(rep(0, ncol(trainset)))
+  stdev <- c(rep(1, ncol(trainset)))
+  factor_index <- c()
+  
+  #get mean and sd for the train set
+  for (column in 1:ncol(trainset)) {
+    #calculate mean and sd
+    if(is.numeric(trainset[, column])){
+      average[column] <- mean(trainset[, column])
+      stdev[column] <- sd(trainset[, column])
+    } else{
+      #this won't actually do anyting to the factor variables
+      average[column] <- 0
+      stdev[column] <- 1
+      
+      #store the columns that are factors in a variable and change to numeric
+      factor_index[column] <-column
+      #trainset[, column] <- as.numeric(trainset[, column])
+      #testset[, column] <- as.numeric(testset[, column])
+    }
+  }
+  
+  #standardize using loop train set
+  for(column in 1:ncol(trainset)){
+    if(is.numeric(trainset[, column])){
+      #calculate column of z scores
+      trainset[, column] <- abs(trainset[, column] - average[column]) / stdev[column]
+    }
+  }
+
+  #standardize using loop test set
+  for(column in 1:ncol(testset)){
+    if(is.numeric(testset[, column])){
+      #calculate column of z scores
+      testset[, column] <- abs(testset[, column] - average[column]) / stdev[column]
+    }
+  }
+
+  #change the formerly factor columns back to factor
+  #trainset[, factor_index] <- as.factor(trainset[, factor_index])
+  #testset[, factor_index] <- as.factor(testset[, factor_index])
+
+  return(list('trainset' = trainset,
+              'testset' = testset))
+}
