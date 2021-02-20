@@ -103,6 +103,14 @@ outliermissingvalues <- function(trainset, testset){
   return(list('trainset' = trainset, 'testset' = testset))
 }
 
+#use z-score standardization for the train and test sets
+#the mean and sd of the training set was used to standardize the test set
+#to have a uniform modeling method.
+#returns:
+#trainset (standardized df)
+#testset (standardized df)
+#average (vector) - the average values for each variable
+#stdev (vector) - the sd of each variable
 standardize <- function(trainset, testset){
   #preallocate memory
   average <- c(rep(0, ncol(trainset)))
@@ -148,5 +156,28 @@ standardize <- function(trainset, testset){
   #testset[, factor_index] <- as.factor(testset[, factor_index])
 
   return(list('trainset' = trainset,
-              'testset' = testset))
+              'testset' = testset,
+              'average' = average,
+              'stdev' = stdev))
 }
+
+#generate synthetic data sets from the train set using SMOTE, ADASYN, and
+#Safe-Level SMOTE
+#ARGs
+#trainset (df) - set of all data to be used 
+#target (string) - name of the column to be used as the target variable
+#ignore (string vector) - names of all data that are non-numeric values
+syngen <- function(trainset, target, ignore, ...){
+  #compatibility checks
+  
+  #SMOTE data synthesis
+  
+  #ADASYN data synthesis
+  
+  #Safe-Level SMOTE data synthesis
+  
+  #return all 3 data sets
+}
+
+
+
