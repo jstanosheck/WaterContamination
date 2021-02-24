@@ -22,7 +22,7 @@ data <- outliermissingvalues(data$trainset, data$testset)
 data <- standardize(data$trainset, data$testset)
 
 #test the syngen function
-oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2))
+oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2), C = 3)
 
 
 
@@ -180,4 +180,17 @@ table(testset$Salmonella, probs)
 roc(testset$Salmonella, predictions, plot = T) #plots roc curve
 
 ######################################################
+safe_level <- smotefamily::SLS(data$trainset[, -c(1, 2)],
+                               data$trainset[, 2],
+                               K=5, 
+                               C=10)
+safe_level$data$class <-as.factor(safe_level$data$class) #sets to factor vs char
+summary(safe_level$data)
 
+#check reassigned SL-Smote
+r_SLS <- smotefamily::RSLS(data$trainset[, -c(1, 2)],
+                               data$trainset[, 2],
+                               K=5, 
+                               C=10)
+r_SLS$data$class <-as.factor(r_SLS$data$class) #sets to factor vs char
+summary(r_SLS$data)
