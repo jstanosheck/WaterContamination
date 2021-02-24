@@ -21,6 +21,11 @@ data <- outliermissingvalues(data$trainset, data$testset)
 #standardize the data sets
 data <- standardize(data$trainset, data$testset)
 
+#test the syngen function
+oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2))
+
+
+
 #Check number of instances for the Salmonella 
 #############################################
 table(data$Salmonella) # 0 = 223 1 = 11

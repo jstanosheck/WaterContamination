@@ -166,17 +166,26 @@ standardize <- function(trainset, testset){
 #ARGs
 #trainset (df) - set of all data to be used 
 #target (string) - name of the column to be used as the target variable
-#ignore (string vector) - names of all data that are non-numeric values
+#ignore (vector) - numeric vector of the indexes that sould be ignored
 syngen <- function(trainset, target, ignore, ...){
   #compatibility checks
   
   #SMOTE data synthesis
+  smote <- smotefamily::SMOTE(trainset[, -ignore], trainset[, target])
+  smote$data$class <-as.factor(smote$data$class) #sets to factor vs char
   
   #ADASYN data synthesis
+  adasyn <- smotefamily::ADAS(trainset[, -ignore], trainset[, target])
+  adasyn$data$class <-as.factor(adasyn$data$class) #sets to factor vs char
   
   #Safe-Level SMOTE data synthesis
+  slsmote <- smotefamily::SLS(trainset[, -ignore], trainset[, target])
+  slsmote$data$class <-as.factor(slsmote$data$class) #sets to factor vs char
   
   #return all 3 data sets
+  return(list('smote' = smote,
+              'adasyn' = adasyn,
+              'slsmote' = slsmote))
 }
 
 
