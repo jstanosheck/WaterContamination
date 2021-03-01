@@ -208,3 +208,14 @@ regNeighbors <- FNN::knn.reg(train = data$trainset[-c(1, 2, 3), -c(1, 2, 8)],
              y = data$trainset[, 8], 
              k=3)$pred
 
+#get the specific data points coresponding to the test
+data$trainset[c(1, 2, 3), -c(1, 8)]
+data$trainset[c(1, 2, 3), 8] <- regNeighbors
+
+index1 <- c(1, 2, 3)
+index2 <- c( 4, 5, 6)
+
+#test knn.reg when using two indexes as your rows
+data$trainset[c(index1, index2), ]
+data$testset[-c(index1, index2), 5]
+

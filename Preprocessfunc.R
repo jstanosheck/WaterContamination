@@ -37,8 +37,10 @@ traintestsplit <- function(data, test_split, set_seed = 1234){
 #outliermissingvalue function
 #ARGS (required):
 #1. trainset (should be df), 2. testset (should be df)
+k-ARG (optional)
+#1. k (integer) the number of neighbors to be used for outlier replacement default k = 3
 
-outliermissingvalues <- function(trainset, testset){
+outliermissingvalues <- function(trainset, testset, K = 3){
   #fix any missing values first in train set and test set
   #train set
   #for loop for each column
@@ -90,13 +92,18 @@ outliermissingvalues <- function(trainset, testset){
       maxvalue <- as.numeric(quantile(trainset[, column], 3/4, na.rm = T) + iqrange)
       minvalue <- as.numeric(quantile(trainset[, column], 1/4, na.rm = T) - iqrange)
       
-      #all values < Q1 - IQR replaced by median
+      #all values < Q1 - IQR
       minindex <- which(trainset[, column] < minvalue)
-      trainset[minindex, column] <- median(trainset[, column])
       
-      #all values > Q3 + IQR replace by median
+      #all values > Q3 + IQR
       maxindex <- which(trainset[, column] > maxvalue)
-      trainset[maxindex, column] <- median(trainset[, column])
+      
+      #replace the index values with knn.reg
+      knn_rep <- FNN::knn.reg(train = trainset[-c(minindex, maxindex), -c(1, 2, column)],
+                   test = trainset[c(minvalue, maxindex), -c(1, 2, column)],#remove the columns w/ non numeric values
+                   y = trainset[, column], 
+                   k=K)$pred #output a vector of integers
+      trainset[c(minindex, maxindex), column] <- knn_rep
     }
   }
   #return the train and test sets
