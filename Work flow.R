@@ -194,3 +194,17 @@ r_SLS <- smotefamily::RSLS(data$trainset[, -c(1, 2)],
                                C=10)
 r_SLS$data$class <-as.factor(r_SLS$data$class) #sets to factor vs char
 summary(r_SLS$data)
+######################################################
+
+#testing knn from class to replace missing values rather than median
+######################################################
+neighbors <- class::knn(data$trainset, data$testset, data$trainset$Conductivity, 
+                        k=3)
+neighbors
+
+#try regression
+regNeighbors <- FNN::knn.reg(train = data$trainset[-c(1, 2, 3), -c(1, 2, 8)],
+             test = data$trainset[c(1, 2, 3), -c(1, 2, 8)],
+             y = data$trainset[, 8], 
+             k=3)$pred
+
