@@ -175,7 +175,7 @@ standardize <- function(trainset, testset){
 #ARGs
 #trainset (df) - set of all data to be used 
 #target (string) - name of the column to be used as the target variable
-#ignore (vector) - numeric vector of the indexes that sould be ignored
+#ignore (vector) - numeric vector of the indexes that should be ignored
 syngen <- function(trainset, target, ignore, ...){
   #compatibility checks
   
