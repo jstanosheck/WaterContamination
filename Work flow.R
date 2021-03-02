@@ -219,3 +219,36 @@ index2 <- c( 4, 5, 6)
 data$trainset[c(index1, index2), ]
 data$testset[-c(index1, index2), 5]
 
+
+
+
+#Test the caret library with logistic regression to get 10 fold cv
+######################################################
+#shuffle the smote data
+smote_index <- sample(nrow(oversampled$smote$data))
+oversampled$smote$data <- oversampled$smote$data[smote_index, ]
+
+train_control <- caret::trainControl(method = 'cv', number = 10)
+
+#logistic regression model using train
+log_model <- caret::train(oversampled$smote$data[, -10],
+                          y = oversampled$smote$data[, 10],
+                          method = 'glm',
+                          trControl = train_control,
+                          family = binomial())
+
+#test the roc curve for the log model
+prediction <- predict(log_model$finalModel, newdata = data$testset, type = 'response')
+
+pROC::roc(data$testset$Salmonella, prediction, plot = T)
+roc.info <- pROC::roc(data$testset$Salmonella, prediction)
+
+#plot the roc info to find threshold values
+roc.df <- data.frame(
+  tpp = roc.info$sensitivities * 100,
+  fpp = roc.info$specificities * 100,
+  thresholds = roc.info$thresholds)
+roc.df
+
+pred <- ifelse(prediction > 0.6494, 1, 0)
+table('true' = data$testset$Salmonella, 'predicted' = pred)
