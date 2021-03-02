@@ -37,10 +37,10 @@ traintestsplit <- function(data, test_split, set_seed = 1234){
 #outliermissingvalue function
 #ARGS (required):
 #1. trainset (should be df), 2. testset (should be df)
-k-ARG (optional)
+#k-ARG (optional)
 #1. k (integer) the number of neighbors to be used for outlier replacement default k = 3
 
-outliermissingvalues <- function(trainset, testset, K = 3){
+outliermissingvalues <- function(trainset, testset){
   #fix any missing values first in train set and test set
   #train set
   #for loop for each column
@@ -86,24 +86,26 @@ outliermissingvalues <- function(trainset, testset, K = 3){
   for (column in 1:ncol(trainset)){
     #only runs the numeric functions if the column is not a factor
     if(!is.factor(trainset[, column])){
-      
+
       #find the min and max values for being non outliers
       iqrange <- IQR(trainset[, column], na.rm = T)
       maxvalue <- as.numeric(quantile(trainset[, column], 3/4, na.rm = T) + iqrange)
       minvalue <- as.numeric(quantile(trainset[, column], 1/4, na.rm = T) - iqrange)
-      
+
       #all values < Q1 - IQR
       minindex <- which(trainset[, column] < minvalue)
-      
+
       #all values > Q3 + IQR
       maxindex <- which(trainset[, column] > maxvalue)
-      
+
       #replace the index values with knn.reg
-      knn_rep <- FNN::knn.reg(train = trainset[-c(minindex, maxindex), -c(1, 2, column)],
-                   test = trainset[c(minvalue, maxindex), -c(1, 2, column)],#remove the columns w/ non numeric values
-                   y = trainset[, column], 
-                   k=K)$pred #output a vector of integers
-      trainset[c(minindex, maxindex), column] <- knn_rep
+      rm_indexes <- c(1, 2, column)
+      outlierindex <- c(maxindex, minindex)
+      print(column)
+      knn_rep <- FNN::knn.reg(train = trainset[-outlierindex, -rm_indexes],
+                              test = trainset[outlierindex, -rm_indexes],
+                              y = trainset[, column], k = 3)$pred #output a vector of integers
+      trainset[outlierindex, column] <- knn_rep
     }
   }
   #return the train and test sets
@@ -178,11 +180,11 @@ syngen <- function(trainset, target, ignore, ...){
   #compatibility checks
   
   #SMOTE data synthesis
-  smote <- smotefamily::SMOTE(trainset[, -ignore], trainset[, target], ...)
+  smote <- smotefamily::SMOTE(trainset[, -ignore], trainset[, target])
   smote$data$class <-as.factor(smote$data$class) #sets to factor vs char
   
   #ADASYN data synthesis
-  adasyn <- smotefamily::ADAS(trainset[, -ignore], trainset[, target], ...)
+  adasyn <- smotefamily::ADAS(trainset[, -ignore], trainset[, target])
   adasyn$data$class <-as.factor(adasyn$data$class) #sets to factor vs char
   
   #Safe-Level SMOTE data synthesis
