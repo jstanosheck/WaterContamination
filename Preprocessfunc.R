@@ -182,21 +182,23 @@ syngen <- function(trainset, target, ignore, ...){
   #SMOTE data synthesis
   smote <- smotefamily::SMOTE(trainset[, -ignore], trainset[, target])
   smote$data$class <-as.factor(smote$data$class) #sets to factor vs char
+  smote_index <- sample(nrow(smote$data))
+  smote$data <- smote$data[smote_index, ] #shuffle the rows
   
   #ADASYN data synthesis
   adasyn <- smotefamily::ADAS(trainset[, -ignore], trainset[, target])
   adasyn$data$class <-as.factor(adasyn$data$class) #sets to factor vs char
+  adasyn_index <- sample(nrow(adasyn$data))
+  adasyn$data <- adasyn$data[adasyn_index, ] #shuffle the rows
   
   #Safe-Level SMOTE data synthesis
   slsmote <- smotefamily::SLS(trainset[, -ignore], trainset[, target], ...)
   slsmote$data$class <-as.factor(slsmote$data$class) #sets to factor vs char
+  slsmote_index <- sample(nrow(slsmote$data))
+  slsmote$data <- slsmote$data[slsmote_index, ] #shuffle the rows
   
   #return all 3 data sets
   return(list('smote' = smote,
               'adasyn' = adasyn,
               'slsmote' = slsmote))
 }
-
-
-
-
