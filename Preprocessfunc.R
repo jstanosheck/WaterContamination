@@ -101,7 +101,6 @@ outliermissingvalues <- function(trainset, testset){
       #replace the index values with knn.reg
       rm_indexes <- c(1, 2, column)
       outlierindex <- c(maxindex, minindex)
-      print(column)
       knn_rep <- FNN::knn.reg(train = trainset[-outlierindex, -rm_indexes],
                               test = trainset[outlierindex, -rm_indexes],
                               y = trainset[, column], k = 3)$pred #output a vector of integers

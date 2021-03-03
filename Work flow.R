@@ -252,3 +252,71 @@ roc.df
 
 pred <- ifelse(prediction > 0.6494, 1, 0)
 table('true' = data$testset$Salmonella, 'predicted' = pred)
+#########################################################
+
+#testing for svm
+#########################################################
+#set the class '1' variable to 'positive' and the class '0' to 'negative'
+oversampled$smote$data$class <- ifelse(oversampled$smote$data$class == 1, 'positive', 'negative')
+
+
+
+#two hyperparameters C (cost) sigma (gamma)
+hyper_grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000, 10000),
+                          sigma = c(0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10))
+
+#train control for cv
+train_control <- caret::trainControl(method = 'repeatedcv',
+                                     number = 10,
+                                     repeats = 10,
+                                     classProbs = T,
+                                     summaryFunction = twoClassSummary)
+
+#SVM model using train
+svm_model <- caret::train(oversampled$smote$data[, -10],
+                          y = oversampled$smote$data[, 10],
+                          method = 'svmRadial',
+                          trControl = train_control,
+                          tuneGrid = hyper_grid,
+                          metric = 'ROC')
+
+svm_model$results
+
+svm_probs <- kernlab::predict(svm_model$finalModel, newdata = data$testset[, -c(1, 2)], type = 'prob')
+svm_predicts <- ifelse(svm_probs[, 2] > 0.027104877, 1, 0)
+table("predict" = svm_predicts, "true" = data$testset$Salmonella)
+
+#generate roc curve from the predictions
+pROC::roc(data$testset$Salmonella, svm_probs[, 2], plot = T)
+
+
+roc.info.svm <- pROC::roc(data$testset$Salmonella, svm_probs[, 2])
+
+#plot the roc info to find threshold values
+roc.df.svm <- data.frame(
+  tpp = roc.info.svm$sensitivities * 100,
+  fpp = roc.info.svm$specificities * 100,
+  thresholds = roc.info.svm$thresholds)
+roc.df.svm
+
+
+#svm model using e1071 library
+###########
+e_svm_model <- e1071::svm(x = oversampled$smote$data[, -10],
+    y = oversampled$smote$data[, 10],
+    gamma = 1, cost = 10, type = 'C',
+    probability = TRUE)
+
+e_svm_predict <- predict(e_svm_model, newdata = data$testset[, -c(1, 2)], type = 'response')
+
+table(e_svm_predict, data$testset$Salmonella)
+#####################################
+
+
+#random forest testing
+#########################################################
+
+
+
+
+

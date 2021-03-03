@@ -19,7 +19,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
                                family = binomial())
   
   #use SMOTE model to predict on the test data
-  smote_predict <- predict(smote_model, newdata = testdata, type = 'response')
+  smote_predict <- predict(smote_model$finalModel, newdata = testdata, type = 'response')
   
   #use ADASYN data set from traindata to generate crossval model
   adasyn_model <- caret::train(traindata$adasyn[, train_cols],
@@ -29,7 +29,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
                               family = binomial())
   
   #use ADASYN model to predict on the test data
-  adasyn_predict <- predict(adasyn_model, newdata = testdata, type = 'response')
+  adasyn_predict <- predict(adasyn_model$finalModel, newdata = testdata, type = 'response')
   
   #use SLSMOTE data set from traindata to generate crossval model
   slsmote_model <- caret::train(traindata$slsmote[, train_cols],
@@ -39,7 +39,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
                                family = binomial())
   
   #use SLSMOTE model to predict on the test data
-  slsmote_predict <- predict(slsmote_model, newdata = testdata, type = 'response')
+  slsmote_predict <- predict(slsmote_model$finalModel, newdata = testdata, type = 'response')
   
   #return overall model, and the predictions form the best model.
   return(list('smote_model' = smote_model,
