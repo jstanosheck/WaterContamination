@@ -12,8 +12,8 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
   train_control <- caret::trainControl(method = 'cv', number = 10)
   
   #use SMOTE data set from traindata to generate crossval model
-   smote_model <- caret::train(traindata$smote[, train_cols],
-                               y = traindata$smote[, target_col],
+   smote_model <- caret::train(traindata$smote$data[, train_cols],
+                               y = traindata$smote$data[, target_col],
                                method = 'glm',
                                trControl = train_control,
                                family = binomial())
@@ -22,8 +22,8 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
   smote_predict <- predict(smote_model$finalModel, newdata = testdata, type = 'response')
   
   #use ADASYN data set from traindata to generate crossval model
-  adasyn_model <- caret::train(traindata$adasyn[, train_cols],
-                              y = traindata$adasyn[, target_col],
+  adasyn_model <- caret::train(traindata$adasyn$data[, train_cols],
+                              y = traindata$adasyn$data[, target_col],
                               method = 'glm',
                               trControl = train_control,
                               family = binomial())
@@ -32,8 +32,8 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
   adasyn_predict <- predict(adasyn_model$finalModel, newdata = testdata, type = 'response')
   
   #use SLSMOTE data set from traindata to generate crossval model
-  slsmote_model <- caret::train(traindata$slsmote[, train_cols],
-                               y = traindata$slsmote[, target_col],
+  slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
+                               y = traindata$slsmote$data[, target_col],
                                method = 'glm',
                                trControl = train_control,
                                family = binomial())
@@ -58,7 +58,35 @@ logistic_model <- function(traindata, testdata, target_col, train_cols){
 
 
 #random forest
-
+forest_model <- function(traindata, testdata, target_col, train_cols,
+                         mtry = c(1:3), ntree = 600){
+  #set the hyper parameters
+  forest_grid <- expand.grid(mtry = mtry)
+  
+  #set train control method
+  train_control <- caret::trainControl(method = 'cv',
+                                       number = 10)
+  
+  #SMOTE training
+  ##########
+  #rf training on the traindata set
+  smote_model <- caret::train(traindata$smote$data[, train_cols],
+                               y = oversampled$smote$data[, target_col],
+                               method = 'rf',
+                               trControl = train_control,
+                               tuneGrid = forest_grid,
+                               metric = 'Accuracy',
+                               ntree = ntree)
+  
+  #ADASYN training
+  ##########
+  #rf training on the traindata set
+  
+  
+  #SLSMOTE training
+  ##########
+  #rf training on the traindata set
+}
 
 
 

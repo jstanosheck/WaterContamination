@@ -315,8 +315,25 @@ table(e_svm_predict, data$testset$Salmonella)
 
 #random forest testing
 #########################################################
+#setting up the first random forest
 
+#one hyper parameter mtry (number of random variables to use in tree)
+forest_grid <- expand.grid(mtry = c(1:6))
 
+#train control for cv
+train_control <- caret::trainControl(method = 'cv',
+                                     number = 10)
 
+#random forest model using train
+forest_model <- caret::train(oversampled$smote$data[, 4:9],
+                          y = oversampled$smote$data[, 10],
+                          method = 'rf',
+                          trControl = train_control,
+                          tuneGrid = forest_grid,
+                          metric = 'Accuracy',
+                          ntree = 100)
+
+forest_predict <- predict(forest_model$finalModel, newdata = data$testset[, 6:11])
+table('prediction' =forest_predict, 'true' = data$testset$Salmonella)
 
 
