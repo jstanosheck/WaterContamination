@@ -1,7 +1,7 @@
 library(glmnet)
 library(pROC)
 
-data <- read.csv("Florida\ Water\ Quality\ Data.csv")
+data <- read.csv("Data/FloridaWaterQualityData.csv")
 summary(data)
 
 #test train test split function
