@@ -337,3 +337,14 @@ forest_predict <- predict(forest_model$finalModel, newdata = data$testset[, 6:11
 table('prediction' =forest_predict, 'true' = data$testset$Salmonella)
 
 
+##########################
+
+#use cook's distance to detect outliers
+############################################
+
+simple_model <- glm(Salmonella~Temp.water+Conductivity+pH+ORP+Trubidity,
+                    data = data$trainset,
+                    family = 'binomial')
+cook_distance <- cooks.distance(simple_model)
+cook_mean <- mean(cook_distance)
+
