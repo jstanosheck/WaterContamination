@@ -348,3 +348,6 @@ simple_model <- glm(Salmonella~Temp.water+Conductivity+pH+ORP+Trubidity,
 cook_distance <- cooks.distance(simple_model)
 cook_mean <- mean(cook_distance)
 
+#check with indexes have a cook's distance greater than 3x mean
+data$trainset$Salmonella[which(cook_distance > 3 * cook_mean)]
+
