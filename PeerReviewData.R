@@ -106,7 +106,55 @@ table(origin_predict, data$testset$Salmonella)
 #Random Forest model determination
 ################################################################################
 
+#use forest_model function on the train and test data
+forest_output <- forest_model(oversampled, data$testset, 10, c(5, 6, 7, 8, 9),
+                              mtry = c(1:4), ntree = 600)
+
+#SMOTE
+#make table for smote prediction
+table(forest_output$smote_predict, data$testset$Salmonella)
+forest_output$smote_model$bestTune
+
+#ADASYN
+#make table for adasyn prediction
+table(forest_output$adasyn_predict, data$testset$Salmonella)
+forest_output$adasyn_model$bestTune
+
+#SL-SMOTE
+#make table for slsmote prediction
+table(forest_output$slsmote_predict, data$testset$Salmonella)
+forest_output$slsmote_model$bestTune
+
+
+#original data forest model
+forest_grid <- expand.grid(mtry = c(1:4))
+
+#set train control method
+train_control <- caret::trainControl(method = 'cv',
+                                     number = 10)
+
+#rf training on the traindata set
+origin_forest <- caret::train(data$trainset[, 7:11],
+                            y = data$trainset[, 2],
+                            method = 'rf',
+                            trControl = train_control,
+                            tuneGrid = forest_grid,
+                            metric = 'Accuracy',
+                            ntree = 600)
+
+#predict using the test data set
+origin_forest_predict <- predict(origin_forest$finalModel, newdata = data$testset)
+
+#make table for origin prediction
+table(origin_forest_predict, data$testset$Salmonella)
+origin_forest$bestTune
 
 ################################################################################
 
+#SVM model determination
+################################################################################
 
+
+
+
+################################################################################
