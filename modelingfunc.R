@@ -85,14 +85,45 @@ forest_model <- function(traindata, testdata, target_col, train_cols,
                                metric = 'Accuracy',
                                ntree = ntree)
   
+  #predict using the test data set
+  smote_predict <- predict(smote_model$finalModel, newdata = testdata)
+  
   #ADASYN training
   ##########
   #rf training on the traindata set
+  adasyn_model <- caret::train(traindata$adasyn$data[, train_cols],
+                              y = oversampled$adasyn$data[, target_col],
+                              method = 'rf',
+                              trControl = train_control,
+                              tuneGrid = forest_grid,
+                              metric = 'Accuracy',
+                              ntree = ntree)
   
+  #predict using the test data set
+  adasyn_predict <- predict(adasyn_model$finalModel, newdata = testdata)
   
   #SLSMOTE training
   ##########
   #rf training on the traindata set
+  slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
+                              y = oversampled$slsmote$data[, target_col],
+                              method = 'rf',
+                              trControl = train_control,
+                              tuneGrid = forest_grid,
+                              metric = 'Accuracy',
+                              ntree = ntree)
+  
+  #predict using the test data set
+  slsmote_predict <- predict(slsmote_model$finalModel, newdata = testdata)
+  
+  return(list(
+    'smote_model' = smote_model,
+    'smote_predict' = smote_predict,
+    'adasyn_model' = adasyn_model,
+    'adasyn_predict' = adasyn_predict,
+    'slsmote_model' = slsmote_model,
+    'slsmote_predict' = slsmote_predict
+  ))
 }
 
 
