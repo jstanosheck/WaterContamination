@@ -154,7 +154,55 @@ origin_forest$bestTune
 #SVM model determination
 ################################################################################
 
+#set the output variables in the training data as 'positive' and 'negative'
+
+oversampled$smote$data$class <- ifelse(oversampled$smote$data$class == 1, 'positive', 'negative')
+oversampled$adasyn$data$class <- ifelse(oversampled$adasyn$data$class == 1, 'positive', 'negative')
+oversampled$slsmote$data$class <- ifelse(oversampled$slsmote$data$class == 1, 'positive', 'negative')
+
+svm_outputs <- svm_model(oversampled, data$testset[, 7:11], 10, c(5:9),
+                         C = c(0.01, 0.1, 1, 10, 100, 1000, 10000),
+                         sigma = c(0.000000001, 0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1))
 
 
+#table for the smote model
+table(svm_outputs$smote_predict, data$testset$Salmonella)
+svm_outputs$smote_model$bestTune
+
+#table for the adasyn model
+table(svm_outputs$adasyn_predict, data$testset$Salmonella)
+svm_outputs$adasyn_model$bestTune
+
+#table for the sl-smote model
+table(svm_outputs$slsmote_predict, data$testset$Salmonella)
+svm_outputs$slsmote_model$bestTune
+
+
+#original data
+hyper_grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000, 10000),
+                          sigma = c(0.000000001, 0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1))
+
+#train control for cv
+train_control <- caret::trainControl(method = 'cv',
+                                     number = 10,
+                                     classProbs = TRUE,
+                                     summaryFunction = twoClassSummary,
+                                     verboseIter = FALSE)
+
+#SVM model using train
+origin_svm <- caret::train(oversampled$smote$data[, c(5:9)],
+                            y = oversampled$smote$data[, 10],
+                            method = 'svmRadial',
+                            trControl = train_control,
+                            tuneGrid = hyper_grid,
+                            metric = 'ROC')
+#probabilityfor smote
+origin_prob <- kernlab::predict(origin_svm$finalModel, newdata = data$testset[, 7:11], type = 'prob')
+
+#predict which is larger
+origin_predict <- ifelse(origin_prob[, 2] > origin_prob[, 1], 1, 0)
+
+table(origin_predict, data$testset$Salmonella)
+origin_svm$bestTune
 
 ################################################################################

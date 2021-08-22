@@ -59,7 +59,76 @@ logistic_model <- function(traindata, testdata, target_col, train_cols, cutoff =
 
 
 #Support Vector machines
+svm_model <- function(traindata, testdata, target_col, train_cols,
+                      C = c(0.01, 0.1, 1), sigma = c(0.001, 0.01, 0.1, 1)){
+  
+  #SMOTE
+  
+  #two hyperparameters C (cost) sigma (gamma)
+  hyper_grid <- expand.grid(C = C,
+                            sigma = sigma)
+  
+  #train control for cv
+  train_control <- caret::trainControl(method = 'cv',
+                                       number = 10,
+                                       classProbs = TRUE,
+                                       summaryFunction = twoClassSummary,
+                                       verboseIter = FALSE)
+  
+  #SVM model using train
+  smote_model <- caret::train(traindata$smote$data[, train_cols],
+                            y = traindata$smote$data[, target_col],
+                            method = 'svmRadial',
+                            trControl = train_control,
+                            tuneGrid = hyper_grid,
+                            metric = 'ROC')
+  #probabilityfor smote
+  smote_prob <- kernlab::predict(smote_model$finalModel, newdata = testdata, type = 'prob')
+  
+  #predict which is larger
+  smote_predict <- ifelse(smote_prob[, 2] > smote_prob[, 1], 1, 0)
 
+
+  #ADASYN
+  adasyn_model <- caret::train(traindata$adasyn$data[, train_cols],
+                              y = traindata$adasyn$data[, target_col],
+                              method = 'svmRadial',
+                              trControl = train_control,
+                              tuneGrid = hyper_grid,
+                              metric = 'ROC')
+  #probability for smote
+  adasyn_prob <- kernlab::predict(adasyn_model$finalModel, newdata = testdata, type = 'prob')
+  
+  #predict which is larger
+  adasyn_predict <- ifelse(adasyn_prob[, 2] > adasyn_prob[, 1], 1, 0)
+
+  #SL-SMOTE
+  slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
+                              y = traindata$slsmote$data[, target_col],
+                              method = 'svmRadial',
+                              trControl = train_control,
+                              tuneGrid = hyper_grid,
+                              metric = 'ROC')
+  #probability for smote
+  slsmote_prob <- kernlab::predict(slsmote_model$finalModel, newdata = testdata, type = 'prob')
+  
+  #predict which is larger
+  slsmote_predict <- ifelse(slsmote_prob[, 2] > slsmote_prob[, 1], 1, 0)
+  
+  
+  return(list(
+    'smote_model' = smote_model,
+    'smote_prob' = smote_prob,
+    'smote_predict' = smote_predict,
+    'adasyn_model' = adasyn_model,
+    'adasyn_prob' = adasyn_prob,
+    'adasyn_predict' = adasyn_predict,
+    'slsmote_model' = slsmote_model,
+    'slsmote_prob' = slsmote_prob,
+    'slsmote_predict' = slsmote_predict
+  ))
+  
+}
 
 
 
