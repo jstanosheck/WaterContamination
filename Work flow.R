@@ -262,12 +262,14 @@ oversampled$smote$data$class <- ifelse(oversampled$smote$data$class == 1, 'posit
 
 
 #two hyperparameters C (cost) sigma (gamma)
-hyper_grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000, 10000),
-                          sigma = c(0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10))
+hyper_grid <- expand.grid(C = c(0.01, 0.1, 1, 10),
+                          sigma = c(0.0000001, 0.000001, 0.00001))
 
 #train control for cv
 train_control <- caret::trainControl(method = 'cv',
-                                     number = 10)
+                                     number = 10,
+                                     classProbs = T,
+                                     summaryFunction = twoClassSummary)
 
 #SVM model using train
 svm_model <- caret::train(oversampled$smote$data[, -10],
@@ -275,7 +277,7 @@ svm_model <- caret::train(oversampled$smote$data[, -10],
                           method = 'svmRadial',
                           trControl = train_control,
                           tuneGrid = hyper_grid,
-                          metric = 'Accuracy')
+                          metric = 'ROC')
 
 svm_model$results
 
