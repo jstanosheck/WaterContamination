@@ -28,7 +28,7 @@ oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2), C = 3)
 
 #Check number of instances for the Salmonella 
 #############################################
-table(data$Salmonella) # 0 = 223 1 = 11
+table(data$trainset$Salmonella) # 0 = 223 1 = 11
 
 #shuffle the data frame as a whole
 set.seed(1234)
