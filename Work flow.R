@@ -22,7 +22,7 @@ data <- outliermissingvalues(data$trainset, data$testset)
 data <- standardize(data$trainset, data$testset)
 
 #test the syngen function
-oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2), C = 3)
+oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2), K=3, C=3)
 
 
 

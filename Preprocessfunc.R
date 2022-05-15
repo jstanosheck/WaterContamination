@@ -98,15 +98,16 @@ outliermissingvalues <- function(trainset, testset, k=3){
       #all values > Q3 + IQR
       maxindex <- which(trainset[, column] > maxvalue)
 
-      #replace the index values with knn.reg
-      rm_indexes <- c(1, 2, column)
+      #replace the index values with average value of column
+      #rm_indexes <- c(1, 2, column) #indexes that are removed from the knn model
       outlierindex <- c(maxindex, minindex)
+      #Working to replace with knn.regression function, if this is possible
       # knn_rep <- FNN::knn.reg(train = trainset[-outlierindex, -rm_indexes],
       #                         test = trainset[outlierindex, -rm_indexes],
       #                         y = trainset[, column], k = k)$pred #output a vector of integers
-      col_average <- mean(trainset[-outlierindex, column])
+      col_average <- mean(trainset[-outlierindex, column]) #finds the average value of the column without the outliers
       knn_rep <- rep(col_average, length(outlierindex)) #replaces the outliers with the mean of the column
-      trainset[outlierindex, column] <- knn_rep
+      trainset[outlierindex, column] <- knn_rep #inserts the replaced values of trainset with the average value
     }
   }
   #return the train and test sets
