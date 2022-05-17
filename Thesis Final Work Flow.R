@@ -50,7 +50,8 @@ log_outputs <- logistic_model(oversampled, data$testset, 10, c(5, 6, 7, 8, 9), c
 
 #roc plot for each log_output
 #smote
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$smote_prob, plot = T)
+roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$smote_prob, plot = TRUE, main = "Logistic Regression SMOTE ROC", 
+                      print.auc = TRUE, percent = TRUE, col = "#027FB9", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities * 100,
   fpp = roc.info$specificities * 100,
@@ -61,7 +62,8 @@ roc.df
 table(log_outputs$smote_predict, data$testset$Salmonella)
 
 #adasyn
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$adasyn_prob, plot = T)
+roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$adasyn_prob, plot = TRUE, main = "Logistic Regression ADASYN ROC",
+                      percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities * 100,
   fpp = roc.info$specificities * 100,
@@ -72,7 +74,8 @@ roc.df
 table(log_outputs$adasyn_predict, data$testset$Salmonella)
 
 #SL-SMOTE
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$slsmote_prob, plot = T)
+roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$slsmote_prob, plot = TRUE, main = "Logistic Regression SL-SMOTE ROC",
+                      percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities * 100,
   fpp = roc.info$specificities * 100,
@@ -96,12 +99,13 @@ origin_model <- caret::train(data$trainset[, 7:11],
 
 #use origin model to predict on the test data
 origin_prob <- predict(origin_model$finalModel, newdata = data$testset, type = 'response')
-origin_predict <- ifelse(origin_prob > 0.5, 1, 0)
+origin_predict <- ifelse(origin_prob > 4.755040e-02, 1, 0)
 
-roc.info <- pROC::roc(data$testset$Salmonella, origin_prob, plot = T)
+roc.info <- pROC::roc(data$testset$Salmonella, origin_prob, plot = TRUE, main = "Logistic Regression Non-Oversampled ROC",
+                      percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
-  tpp = roc.info$sensitivities * 100,
-  fpp = roc.info$specificities * 100,
+  tpp = roc.info$sensitivities,
+  fpp = roc.info$specificities,
   thresholds = roc.info$thresholds)
 roc.df
 
