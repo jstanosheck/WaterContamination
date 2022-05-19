@@ -196,7 +196,7 @@ origin_svm <- caret::train(oversampled$smote$data[, c(5:9)],
                             trControl = train_control,
                             tuneGrid = hyper_grid,
                             metric = 'ROC')
-#probabilityfor smote
+#probability for smote
 origin_prob <- kernlab::predict(origin_svm$finalModel, newdata = data$testset[, 7:11], type = 'prob')
 
 #predict which is larger

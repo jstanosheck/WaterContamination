@@ -1,11 +1,32 @@
 library(glmnet)
 library(pROC)
 
+#import the training data
 data <- read.csv("Data/FloridaWaterQualityData.csv")
 summary(data)
 
-#test train test split function
-data <- traintestsplit(data, 0.2)
+
+#Testing the experimental data
+experimental_data <- read.csv("Data/ExperimentalData.csv")
+summary(experimental_data)
+
+
+
+#set the 'Pathogen' column as a factor
+#sets the training data to a factor
+data$Pathogen <- as.factor(data$Pathogen)
+#sets the experimental data as a factor
+experimental_data$Pathogen <- as.factor(experimental_data$Pathogen)
+
+#remove outliers and missing values from the training data
+data <- outliermissingvalues(data, experimental_data)
+
+#use the training data to standardize both training and testing data
+data <- standardize(data$trainset, data$testset)
+
+#use the syngen function to generate oversampled training set
+oversampled_training <- syngen(data$trainset, "Pathogen", c(1), K=3, C=3)
+
 
 #set Salmonella as a factor for train and test
 data$trainset$Salmonella <- as.factor(data$trainset$Salmonella)
@@ -22,7 +43,43 @@ data <- outliermissingvalues(data$trainset, data$testset)
 data <- standardize(data$trainset, data$testset)
 
 #test the syngen function
-oversampled <- syngen(data$trainset, 'Salmonella', c(1, 2), K=3, C=3)
+oversampled <- syngen(data$trainset, 'Salmonella', c(1), K=3, C=3)
+
+
+
+smote <- smotefamily::SMOTE(data$trainset[,-1], data$trainset[,"Pathogen"])
+
+
+
+
+#set train control method for all three models
+#10-fold cross validation
+train_control <- caret::trainControl(method = 'cv', number = 10)
+
+#use SMOTE data set from traindata to generate crossval model
+smote_model <- caret::train(oversampled_training$smote$data[, c(2, 3, 4, 5)],
+                            y = oversampled_training$smote$data[, 1],
+                            method = 'glm',
+                            trControl = train_control,
+                            family = binomial())
+
+#use SMOTE model to predict on the test data
+smote_prob <- predict(smote_model$finalModel, newdata = testdata, type = 'response')
+smote_predict <- ifelse(smote_prob > cutoff[1], 1, 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
