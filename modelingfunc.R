@@ -5,8 +5,9 @@
 #testdata - data frame of testing data
 #target_col - integer of the column that holds the target variable
 #train_cols - vector of all columns to be used in training
-#cutoff - {double} number for the cutoff of train test data default 0.5
-logistic_model <- function(traindata, testdata, target_col, train_cols, cutoff = 0.5){
+#cutoff - {vector} vector of length 3 for the cutoff of train test data default 0.5
+logistic_model <- function(traindata, testdata, target_col, train_cols,
+                           cutoff = c(0.5, 0.5, 0.5)){
   
   #set train control method for all three models
   #10-fold cross validation
@@ -21,7 +22,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols, cutoff =
   
   #use SMOTE model to predict on the test data
   smote_prob <- predict(smote_model$finalModel, newdata = testdata, type = 'response')
-  smote_predict <- ifelse(smote_prob > cutoff, 1, 0)
+  smote_predict <- ifelse(smote_prob > cutoff[1], 1, 0)
   
   #use ADASYN data set from traindata to generate crossval model
   adasyn_model <- caret::train(traindata$adasyn$data[, train_cols],
@@ -32,7 +33,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols, cutoff =
   
   #use ADASYN model to predict on the test data
   adasyn_prob <- predict(adasyn_model$finalModel, newdata = testdata, type = 'response')
-  adasyn_predict <- ifelse(adasyn_prob > cutoff, 1, 0)
+  adasyn_predict <- ifelse(adasyn_prob > cutoff[2], 1, 0)
   
   #use SLSMOTE data set from traindata to generate crossval model
   slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
@@ -43,7 +44,7 @@ logistic_model <- function(traindata, testdata, target_col, train_cols, cutoff =
   
   #use SLSMOTE model to predict on the test data
   slsmote_prob <- predict(slsmote_model$finalModel, newdata = testdata, type = 'response')
-  slsmote_predict <- ifelse(slsmote_prob > cutoff, 1, 0)
+  slsmote_predict <- ifelse(slsmote_prob > cutoff[3], 1, 0)
   
   #return overall model, and the predictions form the best model.
   return(list('smote_model' = smote_model,
