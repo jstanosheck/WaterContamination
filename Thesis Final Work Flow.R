@@ -60,7 +60,7 @@ roc.df
 table(log_outputs$smote_predict, data$testset$Pathogen)
 
 #adasyn
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$adasyn_prob, plot = TRUE, main = "Logistic Regression ADASYN ROC",
+roc.info <- pROC::roc(data$testset$Pathogen, log_outputs$adasyn_prob, plot = TRUE, main = "Logistic Regression ADASYN ROC",
                       percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities,
@@ -69,10 +69,10 @@ roc.df <- data.frame(
 roc.df
 
 #make confusion matrix for adasyn
-table(log_outputs$adasyn_predict, data$testset$Salmonella)
+table(log_outputs$adasyn_predict, data$testset$Pathogen)
 
 #SL-SMOTE
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$slsmote_prob, plot = TRUE, main = "Logistic Regression SL-SMOTE ROC",
+roc.info <- pROC::roc(data$testset$Pathogen, log_outputs$slsmote_prob, plot = TRUE, main = "Logistic Regression SL-SMOTE ROC",
                       percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities,
@@ -81,7 +81,7 @@ roc.df <- data.frame(
 roc.df
 
 #make confusion matrix for SL-SMOTE
-table(log_outputs$slsmote_predict, data$testset$Salmonella)
+table(log_outputs$slsmote_predict, data$testset$Pathogen)
 
 
 #testing with original data
@@ -148,11 +148,11 @@ oversampled_training <- syngen(data$trainset, "Pathogen", c(1), K=3, C=3)
 
 #Use the oversampled_training data to test the data against the true data
 log_outputs <- logistic_model(oversampled_training, data$testset, 5, c(1, 2, 3, 4),
-                              cutoff = 0.5)
+                              cutoff = c(0.3975600, 0.4206021, 0.03055625))
 
 #roc plot for each log_output
 #smote
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$smote_prob, plot = TRUE, main = "Logistic Regression SMOTE ROC", 
+roc.info <- pROC::roc(data$testset$Pathogen, log_outputs$smote_prob, plot = TRUE, main = "Logistic Regression SMOTE ROC", 
                       print.auc = TRUE, percent = TRUE, col = "#027FB9", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities,
@@ -161,10 +161,10 @@ roc.df <- data.frame(
 roc.df
 
 #make confusion matrix for SMOTE
-table(log_outputs$smote_predict, data$testset$Salmonella)
+table(log_outputs$smote_predict, data$testset$Pathogen)
 
 #adasyn
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$adasyn_prob, plot = TRUE, main = "Logistic Regression ADASYN ROC",
+roc.info <- pROC::roc(data$testset$Pathogen, log_outputs$adasyn_prob, plot = TRUE, main = "Logistic Regression ADASYN ROC",
                       percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities,
@@ -173,10 +173,10 @@ roc.df <- data.frame(
 roc.df
 
 #make confusion matrix for adasyn
-table(log_outputs$adasyn_predict, data$testset$Salmonella)
+table(log_outputs$adasyn_predict, data$testset$Pathogen)
 
 #SL-SMOTE
-roc.info <- pROC::roc(data$testset$Salmonella, log_outputs$slsmote_prob, plot = TRUE, main = "Logistic Regression SL-SMOTE ROC",
+roc.info <- pROC::roc(data$testset$Pathogen, log_outputs$slsmote_prob, plot = TRUE, main = "Logistic Regression SL-SMOTE ROC",
                       percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
 roc.df <- data.frame(
   tpp = roc.info$sensitivities,
@@ -185,31 +185,7 @@ roc.df <- data.frame(
 roc.df
 
 #make confusion matrix for SL-SMOTE
-table(log_outputs$slsmote_predict, data$testset$Salmonella)
+table(log_outputs$slsmote_predict, data$testset$Pathogen)
 
 
-#testing with original data
 
-train_control <- caret::trainControl(method = 'cv', number = 10)
-
-#use original data set
-origin_model <- caret::train(data$trainset[, 7:11],
-                             y = data$trainset[, 2],
-                             method = 'glm',
-                             trControl = train_control,
-                             family = binomial())
-
-#use origin model to predict on the test data
-origin_prob <- predict(origin_model$finalModel, newdata = data$testset, type = 'response')
-origin_predict <- ifelse(origin_prob > 4.755040e-02, 1, 0)
-
-roc.info <- pROC::roc(data$testset$Salmonella, origin_prob, plot = TRUE, main = "Logistic Regression Non-Oversampled ROC",
-                      percent = TRUE, print.auc = TRUE, col = "black", asp = NA, grid = TRUE)
-roc.df <- data.frame(
-  tpp = roc.info$sensitivities,
-  fpp = roc.info$specificities,
-  thresholds = roc.info$thresholds)
-roc.df
-
-#make confusion matrix for SL-SMOTE
-table(origin_predict, data$testset$Salmonella)
