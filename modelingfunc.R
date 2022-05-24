@@ -6,7 +6,10 @@
 #target_col - integer of the column that holds the target variable
 #train_cols - vector of all columns to be used in training
 #cutoff - {vector} vector of length 3 for the cutoff of train test data default 0.5
-logistic_model <- function(traindata, testdata, target_col, train_cols,
+logistic_model <- function(traindata,
+                           testdata,
+                           target_col,
+                           train_cols,
                            cutoff = c(0.5, 0.5, 0.5)){
   
   #set train control method for all three models
@@ -60,8 +63,13 @@ logistic_model <- function(traindata, testdata, target_col, train_cols,
 
 
 #Support Vector machines
-svm_model <- function(traindata, testdata, target_col, train_cols,
-                      C = c(0.01, 0.1, 1), sigma = c(0.001, 0.01, 0.1, 1)){
+svm_model <- function(traindata,
+                      testdata,
+                      target_col, 
+                      train_cols,
+                      C = c(0.01, 0.1, 1),
+                      sigma = c(0.001, 0.01, 0.1, 1),
+                      cutoff = c(0.5, 0.5, 0.5)){
   
   #SMOTE
   
@@ -87,7 +95,7 @@ svm_model <- function(traindata, testdata, target_col, train_cols,
   smote_prob <- kernlab::predict(smote_model$finalModel, newdata = testdata, type = 'prob')
   
   #predict which is larger
-  smote_predict <- ifelse(smote_prob[, 2] > smote_prob[, 1], 1, 0)
+  smote_predict <- ifelse(smote_prob[, 2] > cutoff[1], 1, 0)
 
 
   #ADASYN
@@ -101,7 +109,7 @@ svm_model <- function(traindata, testdata, target_col, train_cols,
   adasyn_prob <- kernlab::predict(adasyn_model$finalModel, newdata = testdata, type = 'prob')
   
   #predict which is larger
-  adasyn_predict <- ifelse(adasyn_prob[, 2] > adasyn_prob[, 1], 1, 0)
+  adasyn_predict <- ifelse(adasyn_prob[, 2] > cutoff[2], 1, 0)
 
   #SL-SMOTE
   slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
@@ -114,7 +122,7 @@ svm_model <- function(traindata, testdata, target_col, train_cols,
   slsmote_prob <- kernlab::predict(slsmote_model$finalModel, newdata = testdata, type = 'prob')
   
   #predict which is larger
-  slsmote_predict <- ifelse(slsmote_prob[, 2] > slsmote_prob[, 1], 1, 0)
+  slsmote_predict <- ifelse(slsmote_prob[, 2] > cutoff[3], 1, 0)
   
   
   return(list(
@@ -135,63 +143,83 @@ svm_model <- function(traindata, testdata, target_col, train_cols,
 
 
 #random forest
-forest_model <- function(traindata, testdata, target_col, train_cols,
-                         mtry = c(1:3), ntree = 600){
+forest_model <- function(traindata,
+                         testdata,
+                         target_col,
+                         train_cols,
+                         mtry = c(1:3),
+                         ntree = 600,
+                         cutoff = c(0.5, 0.5, 0.5)){
   #set the hyper parameters
   forest_grid <- expand.grid(mtry = mtry)
   
   #set train control method
   train_control <- caret::trainControl(method = 'cv',
-                                       number = 10)
+                                       number = 10,
+                                       classProbs = TRUE,
+                                       savePredictions = "final",
+                                       summaryFunction = twoClassSummary)
   
   #SMOTE training
   ##########
   #rf training on the traindata set
   smote_model <- caret::train(traindata$smote$data[, train_cols],
-                               y = oversampled$smote$data[, target_col],
+                               y = traindata$smote$data[, target_col],
                                method = 'rf',
                                trControl = train_control,
                                tuneGrid = forest_grid,
-                               metric = 'Accuracy',
+                               metric = 'ROC',
                                ntree = ntree)
   
   #predict using the test data set
-  smote_predict <- predict(smote_model$finalModel, newdata = testdata)
+  smote_prob <- predict(smote_model$finalModel, 
+                           newdata = testdata,
+                           type = "prob")
+  smote_predict <- ifelse(smote_prob[, 2] > cutoff[1], 1, 0)
   
   #ADASYN training
   ##########
   #rf training on the traindata set
   adasyn_model <- caret::train(traindata$adasyn$data[, train_cols],
-                              y = oversampled$adasyn$data[, target_col],
+                              y = traindata$adasyn$data[, target_col],
                               method = 'rf',
                               trControl = train_control,
                               tuneGrid = forest_grid,
-                              metric = 'Accuracy',
+                              metric = 'ROC',
                               ntree = ntree)
   
   #predict using the test data set
-  adasyn_predict <- predict(adasyn_model$finalModel, newdata = testdata)
+  adasyn_prob <- predict(adasyn_model$finalModel,
+                            newdata = testdata,
+                            type = "prob")
+  adasyn_predict <-ifelse(adasyn_prob[, 2] > cutoff[2], 1, 0)
   
   #SLSMOTE training
   ##########
   #rf training on the traindata set
   slsmote_model <- caret::train(traindata$slsmote$data[, train_cols],
-                              y = oversampled$slsmote$data[, target_col],
+                              y = traindata$slsmote$data[, target_col],
                               method = 'rf',
                               trControl = train_control,
                               tuneGrid = forest_grid,
-                              metric = 'Accuracy',
+                              metric = 'ROC',
                               ntree = ntree)
   
   #predict using the test data set
-  slsmote_predict <- predict(slsmote_model$finalModel, newdata = testdata)
+  slsmote_prob <- predict(slsmote_model$finalModel,
+                             newdata = testdata,
+                             type = "prob")
+  slsmote_predict <- ifelse(slsmote_prob[, 2] > cutoff[3], 1, 0)
   
   return(list(
     'smote_model' = smote_model,
+    'smote_prob' = smote_prob,
     'smote_predict' = smote_predict,
     'adasyn_model' = adasyn_model,
+    'adasyn_prob' = adasyn_prob,
     'adasyn_predict' = adasyn_predict,
     'slsmote_model' = slsmote_model,
+    'slsmote_prob' = slsmote_prob,
     'slsmote_predict' = slsmote_predict
   ))
 }
